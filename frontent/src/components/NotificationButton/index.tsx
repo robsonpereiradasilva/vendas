@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 import { BASE_URL } from '../../api';
 import icon from '../../assets/img/notification-icon.svg'
 import "./styles.css"
@@ -10,7 +11,7 @@ type NotificationButtonProps ={
 function handleNotitification(saleid :number){
     axios(`${BASE_URL}/sales/${saleid}/notification`)
     .then(response =>{
-        null
+        toast.info("SMS enviado com sucesso")
     })
 }
 
