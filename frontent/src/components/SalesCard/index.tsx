@@ -1,13 +1,33 @@
-import { useState } from 'react'
+import axios from 'axios'
+import { useEffect, useState } from 'react'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
+import { BASE_URL } from '../../api'
+import { Sale } from '../../models/sales'
 
 import NotificationButton from '../NotificationButton'
 import './styles.css'
 
 function SalesCard() {
-    const [dateIini, setDatIni] = useState(new Date());
+
+    const [dateIni, setDateIni] = useState(new Date());
     const [dateEnd, setDateEnd] = useState(new Date());
+    const [sales, setSales] = useState<Sale[]>([]);
+
+    useEffect(() => {
+        const dmin = dateIni.toISOString().slice(0, 10);
+        
+        
+        const dmax = dateEnd.toISOString().slice(0, 10);
+        
+        const url = `${BASE_URL}/sales?minDate=${dmin}&maxDate=${dmax}`;
+        
+        axios.get(url)   
+            .then(response => {                                         
+                setSales(response.data.content)
+            });
+    }, [dateIni,dateEnd]);
+
     return (
         <>
             <div className="dsmeta-card">
@@ -15,19 +35,19 @@ function SalesCard() {
                 <div>
                     <div className="dsmeta-form-control-container">
                         <DatePicker
-                            selected={dateIini}
-                            onChange={(date: Date) => setDatIni(date)}
+                            selected={dateIni}
+                            onChange={(date: Date) => setDateIni(date)}
                             className="dsmeta-form-control"
                             dateFormat="dd/MM/yyyy"
                         />
                     </div>
                     <div className="dsmeta-form-control-container">
-                    <DatePicker
+                        <DatePicker
                             selected={dateEnd}
                             onChange={(date: Date) => setDateEnd(date)}
                             className="dsmeta-form-control"
                             dateFormat="dd/MM/yyyy"
-                        />
+                        /> 
                     </div>
                 </div>
 
@@ -45,45 +65,22 @@ function SalesCard() {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td className="show992">#341</td>
-                                <td className="show576">08/07/2022</td>
-                                <td>Anakin</td>
-                                <td className="show992">15</td>
-                                <td className="show992">11</td>
-                                <td>R$ 55300.00</td>
-                                <td>
-                                    <div className="dsmeta-red-btn-container">
-                                        <NotificationButton />
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="show992">#341</td>
-                                <td className="show576">08/07/2022</td>
-                                <td>Anakin</td>
-                                <td className="show992">15</td>
-                                <td className="show992">11</td>
-                                <td>R$ 55300.00</td>
-                                <td>
-                                    <div className="dsmeta-red-btn-container">
-                                        <NotificationButton />
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="show992">#341</td>
-                                <td className="show576">08/07/2022</td>
-                                <td>Anakin</td>
-                                <td className="show992">15</td>
-                                <td className="show992">11</td>
-                                <td>R$ 55300.00</td>
-                                <td>
-                                    <div className="dsmeta-red-btn-container">
-                                        <NotificationButton />
-                                    </div>
-                                </td>
-                            </tr>
+                            {sales.map(sale => {
+                                return (
+                                    <tr key={sale.id}>
+                                        <td className="show992">{sale.id}</td>
+                                        <td className="show576">{new Date(sale.date).toLocaleDateString()}</td>
+                                        <td>{sale.sellerName}</td>
+                                        <td className="show992">{sale.deals}</td>
+                                        <td className="show992">{sale.visited}</td>
+                                        <td>R$ {sale.amount.toFixed(2)}</td>
+                                        <td>
+                                            <div className="dsmeta-red-btn-container">
+                                                <NotificationButton saleid={sale.id} />
+                                            </div>
+                                        </td>
+                                    </tr>)
+                            })}
                         </tbody>
                     </table>
                 </div>
